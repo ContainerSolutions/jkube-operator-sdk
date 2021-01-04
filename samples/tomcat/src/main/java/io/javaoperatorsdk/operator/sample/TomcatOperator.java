@@ -5,6 +5,7 @@ import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.Operator;
+import io.javaoperatorsdk.operator.StandaloneOperator;
 import io.javaoperatorsdk.operator.config.runtime.DefaultConfigurationService;
 import java.io.IOException;
 import org.slf4j.Logger;
@@ -22,7 +23,7 @@ public class TomcatOperator {
 
     Config config = new ConfigBuilder().withNamespace(null).build();
     KubernetesClient client = new DefaultKubernetesClient(config);
-    Operator operator = new Operator(client, DefaultConfigurationService.instance());
+    Operator operator = new StandaloneOperator(client, DefaultConfigurationService.instance());
 
     TomcatController tomcatController = new TomcatController(client);
     operator.registerControllerForAllNamespaces(tomcatController);

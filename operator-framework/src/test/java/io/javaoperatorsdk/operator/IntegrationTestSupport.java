@@ -71,7 +71,7 @@ public class IntegrationTestSupport {
                   .withMetadata(new ObjectMetaBuilder().withName(TEST_NAMESPACE).build())
                   .build());
     }
-    operator = new Operator(k8sClient, configurationService);
+    operator = new StandaloneOperator(k8sClient, configurationService);
     operator.registerController(controller, retry, TEST_NAMESPACE);
     log.info("Operator is running with {}", controller.getClass().getCanonicalName());
   }

@@ -1,7 +1,7 @@
 package io.javaoperatorsdk.operator;
 
 import static io.javaoperatorsdk.operator.IntegrationTestSupport.TEST_NAMESPACE;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;

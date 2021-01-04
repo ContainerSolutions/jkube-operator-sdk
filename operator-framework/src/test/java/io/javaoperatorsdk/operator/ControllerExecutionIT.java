@@ -1,6 +1,6 @@
 package io.javaoperatorsdk.operator;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;

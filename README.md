@@ -79,8 +79,7 @@ Once you've added the dependency, define a main method initializing the Operator
 public class Runner {
 
    public static void main(String[] args) {
-       Operator operator = new Operator(new DefaultKubernetesClient(),
-           DefaultConfigurationService.instance());
+       Operator operator = new StandaloneOperator(new DefaultKubernetesClient());
        operator.register(new WebServerController());
    }
 }

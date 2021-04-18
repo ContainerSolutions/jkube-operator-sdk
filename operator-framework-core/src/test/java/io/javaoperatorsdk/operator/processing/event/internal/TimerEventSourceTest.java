@@ -47,7 +47,7 @@ class TimerEventSourceTest {
         .handleEvent(argumentCaptor.capture());
     List<TimerEvent> events = argumentCaptor.getAllValues();
     assertThat(events)
-        .allMatch(e -> e.getRelatedCustomResourceUid().equals(getUID(customResource)));
+        .allMatch(e -> e.getRelatedCustomResourceID().equals(getUID(customResource)));
     assertThat(events).allMatch(e -> e.getEventSource().equals(timerEventSource));
   }
 

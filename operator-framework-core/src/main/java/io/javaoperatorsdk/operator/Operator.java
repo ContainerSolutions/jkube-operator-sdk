@@ -12,6 +12,9 @@ import io.javaoperatorsdk.operator.api.config.ControllerConfiguration;
 import io.javaoperatorsdk.operator.processing.CustomResourceCache;
 import io.javaoperatorsdk.operator.processing.DefaultEventHandler;
 import io.javaoperatorsdk.operator.processing.EventDispatcher;
+import io.javaoperatorsdk.operator.processing.cache.CaffeinCacheAdaptor;
+import io.javaoperatorsdk.operator.processing.cache.PassThroughResourceCache;
+import io.javaoperatorsdk.operator.processing.cache.ResourceCache;
 import io.javaoperatorsdk.operator.processing.event.DefaultEventSourceManager;
 import io.javaoperatorsdk.operator.processing.event.internal.CustomResourceEventSource;
 import io.javaoperatorsdk.operator.processing.retry.GenericRetry;
@@ -26,18 +29,21 @@ public class Operator {
   private final KubernetesClient k8sClient;
   private final ConfigurationService configurationService;
   private final ObjectMapper objectMapper;
+  private final ResourceCache resourceCache;
 
   public Operator(KubernetesClient k8sClient, ConfigurationService configurationService) {
-    this(k8sClient, configurationService, new ObjectMapper());
+    this(k8sClient, configurationService, new ObjectMapper(), new CaffeinCacheAdaptor());
   }
 
   public Operator(
       KubernetesClient k8sClient,
       ConfigurationService configurationService,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      ResourceCache resourceCache) {
     this.k8sClient = k8sClient;
     this.configurationService = configurationService;
     this.objectMapper = objectMapper;
+    this.resourceCache = resourceCache;
   }
 
   /**
@@ -139,9 +145,9 @@ public class Operator {
       final var client = k8sClient.customResources(resClass);
       EventDispatcher<R> dispatcher = new EventDispatcher<>(controller, finalizer, client);
 
-      CustomResourceCache customResourceCache = new CustomResourceCache(objectMapper);
+      PassThroughResourceCache passThroughResourceCache = new PassThroughResourceCache(resourceCache,client,objectMapper);
       DefaultEventHandler defaultEventHandler =
-          new DefaultEventHandler(customResourceCache, dispatcher, controllerName, retry);
+          new DefaultEventHandler(passThroughResourceCache, dispatcher, controllerName, retry);
       DefaultEventSourceManager eventSourceManager =
           new DefaultEventSourceManager(defaultEventHandler, retry != null);
       defaultEventHandler.setEventSourceManager(eventSourceManager);
@@ -152,7 +158,7 @@ public class Operator {
       CustomResourceEventSource customResourceEventSource =
           createCustomResourceEventSource(
               client,
-              customResourceCache,
+              passThroughResourceCache,
               watchAllNamespaces,
               targetNamespaces,
               defaultEventHandler,
@@ -170,7 +176,7 @@ public class Operator {
 
   private CustomResourceEventSource createCustomResourceEventSource(
       MixedOperation client,
-      CustomResourceCache customResourceCache,
+      PassThroughResourceCache customResourceCache,
       boolean watchAllNamespaces,
       String[] targetNamespaces,
       DefaultEventHandler defaultEventHandler,

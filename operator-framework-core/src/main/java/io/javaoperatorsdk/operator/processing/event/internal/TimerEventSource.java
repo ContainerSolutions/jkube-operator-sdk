@@ -2,6 +2,7 @@ package io.javaoperatorsdk.operator.processing.event.internal;
 
 import io.fabric8.kubernetes.client.CustomResource;
 import io.javaoperatorsdk.operator.processing.KubernetesResourceUtils;
+import io.javaoperatorsdk.operator.processing.cache.CustomResourceID;
 import io.javaoperatorsdk.operator.processing.event.AbstractEventSource;
 import java.util.Map;
 import java.util.Timer;
@@ -24,7 +25,7 @@ public class TimerEventSource extends AbstractEventSource {
     if (timerTasks.containsKey(resourceUid)) {
       return;
     }
-    EventProducerTimeTask task = new EventProducerTimeTask(resourceUid);
+    EventProducerTimeTask task = new EventProducerTimeTask(CustomResourceID.fromCustomResource(customResource));
     timerTasks.put(resourceUid, task);
     timer.schedule(task, delay, period);
   }
@@ -34,7 +35,7 @@ public class TimerEventSource extends AbstractEventSource {
     if (onceTasks.containsKey(resourceUid)) {
       cancelOnceSchedule(resourceUid);
     }
-    EventProducerTimeTask task = new EventProducerTimeTask(resourceUid);
+    EventProducerTimeTask task = new EventProducerTimeTask(CustomResourceID.fromCustomResource(customResource));
     onceTasks.put(resourceUid, task);
     timer.schedule(task, delay);
   }
@@ -61,16 +62,16 @@ public class TimerEventSource extends AbstractEventSource {
 
   public class EventProducerTimeTask extends TimerTask {
 
-    protected final String customResourceUid;
+    protected final CustomResourceID customResourceID;
 
-    public EventProducerTimeTask(String customResourceUid) {
-      this.customResourceUid = customResourceUid;
+    public EventProducerTimeTask(CustomResourceID customResourceID) {
+      this.customResourceID = customResourceID;
     }
 
     @Override
     public void run() {
-      log.debug("Producing event for custom resource id: {}", customResourceUid);
-      eventHandler.handleEvent(new TimerEvent(customResourceUid, TimerEventSource.this));
+      log.debug("Producing event for custom resource id: {}", customResourceID);
+      eventHandler.handleEvent(new TimerEvent(customResourceID, TimerEventSource.this));
     }
   }
 }

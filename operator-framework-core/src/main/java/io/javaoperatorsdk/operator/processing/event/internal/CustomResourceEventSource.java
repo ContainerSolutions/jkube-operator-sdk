@@ -10,6 +10,7 @@ import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.internal.CustomResourceOperationsImpl;
 import io.javaoperatorsdk.operator.processing.CustomResourceCache;
 import io.javaoperatorsdk.operator.processing.KubernetesResourceUtils;
+import io.javaoperatorsdk.operator.processing.cache.PassThroughResourceCache;
 import io.javaoperatorsdk.operator.processing.event.AbstractEventSource;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,7 +23,7 @@ public class CustomResourceEventSource extends AbstractEventSource
 
   private static final Logger log = LoggerFactory.getLogger(CustomResourceEventSource.class);
 
-  private final CustomResourceCache resourceCache;
+  private final PassThroughResourceCache resourceCache;
   private MixedOperation client;
   private final String[] targetNamespaces;
   private final boolean generationAware;
@@ -30,7 +31,7 @@ public class CustomResourceEventSource extends AbstractEventSource
   private final Map<String, Long> lastGenerationProcessedSuccessfully = new ConcurrentHashMap<>();
 
   public static CustomResourceEventSource customResourceEventSourceForAllNamespaces(
-      CustomResourceCache customResourceCache,
+          PassThroughResourceCache customResourceCache,
       MixedOperation client,
       boolean generationAware,
       String resourceFinalizer) {
@@ -39,7 +40,7 @@ public class CustomResourceEventSource extends AbstractEventSource
   }
 
   public static CustomResourceEventSource customResourceEventSourceForTargetNamespaces(
-      CustomResourceCache customResourceCache,
+          PassThroughResourceCache customResourceCache,
       MixedOperation client,
       String[] namespaces,
       boolean generationAware,
@@ -49,7 +50,7 @@ public class CustomResourceEventSource extends AbstractEventSource
   }
 
   private CustomResourceEventSource(
-      CustomResourceCache customResourceCache,
+          PassThroughResourceCache customResourceCache,
       MixedOperation client,
       String[] targetNamespaces,
       boolean generationAware,

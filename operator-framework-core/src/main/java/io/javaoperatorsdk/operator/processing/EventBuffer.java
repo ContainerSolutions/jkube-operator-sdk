@@ -12,7 +12,7 @@ class EventBuffer {
   private final Map<String, List<Event>> events = new HashMap<>();
 
   public void addEvent(Event event) {
-    String uid = event.getRelatedCustomResourceUid();
+    String uid = event.getRelatedCustomResourceID().getCustomResourceUid();
     List<Event> crEvents = events.computeIfAbsent(uid, (id) -> new ArrayList<>(1));
     crEvents.add(event);
   }

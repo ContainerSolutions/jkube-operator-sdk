@@ -5,10 +5,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.javaoperatorsdk.operator.TestUtils;
 import io.javaoperatorsdk.operator.processing.CustomResourceCache;
+import io.javaoperatorsdk.operator.processing.cache.CaffeinCacheAdaptor;
+import io.javaoperatorsdk.operator.processing.cache.PassThroughResourceCache;
 import io.javaoperatorsdk.operator.processing.event.EventHandler;
 import io.javaoperatorsdk.operator.sample.simple.TestCustomResource;
 import java.time.LocalDateTime;
@@ -19,8 +22,8 @@ import org.junit.jupiter.api.Test;
 class CustomResourceEventSourceTest {
 
   public static final String FINALIZER = "finalizer";
-  CustomResourceCache customResourceCache = new CustomResourceCache();
   MixedOperation mixedOperation = mock(MixedOperation.class);
+  PassThroughResourceCache customResourceCache = new PassThroughResourceCache(new CaffeinCacheAdaptor(),mixedOperation,new ObjectMapper());
   EventHandler eventHandler = mock(EventHandler.class);
 
   private CustomResourceEventSource customResourceEventSource =

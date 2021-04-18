@@ -1,4 +1,4 @@
-.jekyll-cache/
+.jekyll-resourceCache/
 _site/
 .DS_Store
-.sass-cache
+.sass-resourceCache

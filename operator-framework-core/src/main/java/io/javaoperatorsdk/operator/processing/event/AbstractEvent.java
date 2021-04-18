@@ -1,18 +1,20 @@
 package io.javaoperatorsdk.operator.processing.event;
 
+import io.javaoperatorsdk.operator.processing.cache.CustomResourceID;
+
 public abstract class AbstractEvent implements Event {
 
-  private final String relatedCustomResourceUid;
+  private final CustomResourceID relatedCustomResourceUid;
 
   private final EventSource eventSource;
 
-  public AbstractEvent(String relatedCustomResourceUid, EventSource eventSource) {
+  public AbstractEvent(CustomResourceID relatedCustomResourceUid, EventSource eventSource) {
     this.relatedCustomResourceUid = relatedCustomResourceUid;
     this.eventSource = eventSource;
   }
 
   @Override
-  public String getRelatedCustomResourceUid() {
+  public CustomResourceID getRelatedCustomResourceID() {
     return relatedCustomResourceUid;
   }
 

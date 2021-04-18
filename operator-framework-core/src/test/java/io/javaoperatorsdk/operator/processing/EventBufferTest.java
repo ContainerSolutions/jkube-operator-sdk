@@ -21,7 +21,7 @@ class EventBufferTest {
     eventBuffer.addEvent(testEvent1);
     eventBuffer.addEvent(testEvent2);
 
-    assertThat(eventBuffer.containsEvents(testEvent1.getRelatedCustomResourceUid())).isTrue();
+    assertThat(eventBuffer.containsEvents(testEvent1.getRelatedCustomResourceID())).isTrue();
     List<Event> events = eventBuffer.getAndRemoveEventsForExecution(uid);
     assertThat(events).hasSize(2);
   }
@@ -41,7 +41,7 @@ class EventBufferTest {
     eventBuffer.addEvent(testEvent1);
     eventBuffer.addEvent(testEvent2);
 
-    assertThat(eventBuffer.containsEvents(testEvent1.getRelatedCustomResourceUid())).isTrue();
+    assertThat(eventBuffer.containsEvents(testEvent1.getRelatedCustomResourceID())).isTrue();
   }
 
   @Test
@@ -51,6 +51,6 @@ class EventBufferTest {
 
     eventBuffer.cleanup(uid);
 
-    assertThat(eventBuffer.containsEvents(testEvent1.getRelatedCustomResourceUid())).isFalse();
+    assertThat(eventBuffer.containsEvents(testEvent1.getRelatedCustomResourceID())).isFalse();
   }
 }

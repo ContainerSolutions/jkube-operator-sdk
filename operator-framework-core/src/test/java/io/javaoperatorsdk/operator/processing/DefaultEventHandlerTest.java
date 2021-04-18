@@ -69,7 +69,7 @@ class DefaultEventHandlerTest {
   @Test
   public void skipProcessingIfLatestCustomResourceNotInCache() {
     Event event = prepareCREvent();
-    customResourceCache.cleanup(event.getRelatedCustomResourceUid());
+    customResourceCache.cleanup(event.getRelatedCustomResourceID());
 
     defaultEventHandler.handleEvent(event);
 
@@ -137,7 +137,7 @@ class DefaultEventHandlerTest {
   public void executesTheControllerInstantlyAfterErrorIfEventsBuffered() {
     Event event = prepareCREvent();
     TestCustomResource customResource = testCustomResource();
-    customResource.getMetadata().setUid(event.getRelatedCustomResourceUid());
+    customResource.getMetadata().setUid(event.getRelatedCustomResourceID());
     ExecutionScope executionScope = new ExecutionScope(Arrays.asList(event), customResource, null);
     PostExecutionControl postExecutionControl =
         PostExecutionControl.exceptionDuringExecution(new RuntimeException("test"));
@@ -168,7 +168,7 @@ class DefaultEventHandlerTest {
 
     Event event = prepareCREvent();
     TestCustomResource customResource = testCustomResource();
-    customResource.getMetadata().setUid(event.getRelatedCustomResourceUid());
+    customResource.getMetadata().setUid(event.getRelatedCustomResourceID());
     ExecutionScope executionScope = new ExecutionScope(Arrays.asList(event), customResource, null);
     PostExecutionControl postExecutionControlWithException =
         PostExecutionControl.exceptionDuringExecution(new RuntimeException("test"));
@@ -222,7 +222,7 @@ class DefaultEventHandlerTest {
                 });
     Event event = prepareCREvent();
     defaultEventHandler.handleEvent(event);
-    return event.getRelatedCustomResourceUid();
+    return event.getRelatedCustomResourceID();
   }
 
   private CustomResourceEvent prepareCREvent() {

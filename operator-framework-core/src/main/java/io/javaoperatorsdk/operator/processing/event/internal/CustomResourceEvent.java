@@ -2,7 +2,7 @@ package io.javaoperatorsdk.operator.processing.event.internal;
 
 import io.fabric8.kubernetes.client.CustomResource;
 import io.fabric8.kubernetes.client.Watcher;
-import io.javaoperatorsdk.operator.processing.KubernetesResourceUtils;
+import io.javaoperatorsdk.operator.processing.cache.CustomResourceID;
 import io.javaoperatorsdk.operator.processing.event.AbstractEvent;
 
 public class CustomResourceEvent extends AbstractEvent {
@@ -14,7 +14,7 @@ public class CustomResourceEvent extends AbstractEvent {
       Watcher.Action action,
       CustomResource resource,
       CustomResourceEventSource customResourceEventSource) {
-    super(KubernetesResourceUtils.getUID(resource), customResourceEventSource);
+    super(CustomResourceID.fromCustomResource(resource), customResourceEventSource);
     this.action = action;
     this.customResource = resource;
   }

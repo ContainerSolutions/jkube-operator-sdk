@@ -2,9 +2,9 @@ package io.javaoperatorsdk.operator.processing.event.internal;
 
 import io.javaoperatorsdk.operator.processing.event.AbstractEvent;
 
-public class TimerEvent extends AbstractEvent {
+public class RepeatedTimerEvent extends AbstractEvent {
 
-  public TimerEvent(String relatedCustomResourceUid, TimerEventSource eventSource) {
+  public RepeatedTimerEvent(String relatedCustomResourceUid, TimerEventSource eventSource) {
     super(relatedCustomResourceUid, eventSource);
   }
 }

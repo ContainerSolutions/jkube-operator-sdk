@@ -21,7 +21,7 @@ import org.mockito.ArgumentCaptor;
 
 @Disabled(
     "Currently very flaky, will fix in https://github.com/java-operator-sdk/java-operator-sdk/issues/293")
-class TimerEventSourceTest {
+class RepeatedTimerEventSourceTest {
 
   public static final int INITIAL_DELAY = 50;
   public static final int PERIOD = 50;
@@ -42,10 +42,11 @@ class TimerEventSourceTest {
 
     timerEventSource.schedule(customResource, INITIAL_DELAY, PERIOD);
 
-    ArgumentCaptor<TimerEvent> argumentCaptor = ArgumentCaptor.forClass(TimerEvent.class);
+    ArgumentCaptor<RepeatedTimerEvent> argumentCaptor =
+        ArgumentCaptor.forClass(RepeatedTimerEvent.class);
     verify(eventHandlerMock, timeout(INITIAL_DELAY + PERIOD + TESTING_TIME_SLACK).times(2))
         .handleEvent(argumentCaptor.capture());
-    List<TimerEvent> events = argumentCaptor.getAllValues();
+    List<RepeatedTimerEvent> events = argumentCaptor.getAllValues();
     assertThat(events)
         .allMatch(e -> e.getRelatedCustomResourceUid().equals(getUID(customResource)));
     assertThat(events).allMatch(e -> e.getEventSource().equals(timerEventSource));

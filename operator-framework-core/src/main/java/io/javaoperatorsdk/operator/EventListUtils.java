@@ -5,8 +5,16 @@ import io.javaoperatorsdk.operator.processing.event.Event;
 import io.javaoperatorsdk.operator.processing.event.internal.CustomResourceEvent;
 import java.util.List;
 
+/**
+ * Static class to group together utility methods relating to lists of events.
+ */
 public class EventListUtils {
 
+  /**
+   * Returns whether the provided list of events contains any "Resource Deleted" events
+   * @param events the event list to be checked
+   * @return the boolean answer
+   */
   public static boolean containsCustomResourceDeletedEvent(List<Event> events) {
     return events.stream()
         .anyMatch(

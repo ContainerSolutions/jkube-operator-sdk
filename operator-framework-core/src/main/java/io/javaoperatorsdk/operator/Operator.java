@@ -16,6 +16,12 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The Operator class is the primary way of interacting with the Java Operator SDK. Instances of
+ * this class logically group together controllers that carry out tasks related to the function of
+ * the operator. It also binds these controllers to a single common Kubernetes client implemented by
+ * the Fabric8 library, with a single provided configuration.
+ */
 @SuppressWarnings("rawtypes")
 public class Operator implements AutoCloseable {
 
@@ -24,6 +30,13 @@ public class Operator implements AutoCloseable {
   private final ConfigurationService configurationService;
   private final List<Closeable> closeables;
 
+  /**
+   * Instantiates an Operator with the provided Fabric8 client instance and the configuration
+   * service it should use.
+   * @param k8sClient: The Fabric8 Kubernetes client instance all controllers registered should use
+   * @param configurationService: The configuration service instance the configuration values should
+   *                           be retrieved from
+   */
   public Operator(KubernetesClient k8sClient, ConfigurationService configurationService) {
     this.k8sClient = k8sClient;
     this.configurationService = configurationService;
@@ -33,9 +46,9 @@ public class Operator implements AutoCloseable {
   }
 
   /**
-   * Finishes the operator startup process. This is mostly used in injection-aware applications
-   * where there is no obvious entrypoint to the application which can trigger the injection process
-   * and start the cluster monitoring processes.
+   * Finishes the operator startup process.
+   * This is mostly used in injection-aware applications where there is no obvious entrypoint to the
+   * application which can trigger the injection process and start the cluster monitoring processes.
    */
   public void start() {
     final var version = configurationService.getVersion();
@@ -56,7 +69,9 @@ public class Operator implements AutoCloseable {
     }
   }
 
-  /** Stop the operator. */
+  /** Stops the operator.
+   * Also closes all registered controllers by propagating the termination instruction via the
+   * Closeable interface.*/
   @Override
   public void close() {
     log.info("Operator {} is shutting down...", configurationService.getVersion().getSdkVersion());
@@ -73,6 +88,7 @@ public class Operator implements AutoCloseable {
 
   /**
    * Registers the specified controller with this operator.
+   * This met
    *
    * @param controller the controller to register
    * @param <R> the {@code CustomResource} type associated with the controller

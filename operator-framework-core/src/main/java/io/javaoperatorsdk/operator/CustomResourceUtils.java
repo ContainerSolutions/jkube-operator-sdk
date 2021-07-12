@@ -5,6 +5,9 @@ import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.api.model.apiextensions.v1.CustomResourceDefinition;
 import java.util.Arrays;
 
+/**
+ * Static class to group together utility methods relating to custom resources.
+ */
 public abstract class CustomResourceUtils {
 
   /**

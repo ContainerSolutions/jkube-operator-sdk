@@ -16,6 +16,21 @@ jobs:
         run: mvn versions:set -DnewVersion="${RELEASE_VERSION:1}" versions:commit
         env:
           RELEASE_VERSION: ${{ github.event.release.tag_name }}
+      - name: Conventional Changelog Action
+        id: changelog
+        uses: TriPSs/conventional-changelog-action@v3
+        with:
+          github-token: ${{ secrets.github_token }}
+          output-file: "false"
+      - name: Create Release
+        uses: actions/create-release@v1
+        if: ${{ steps.changelog.outputs.skipped == 'false' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
+        with:
+          tag_name: ${{ steps.changelog.outputs.tag }}
+          release_name: ${{ steps.changelog.outputs.tag }}
+          body: ${{ steps.changelog.outputs.clean_changelog }}
       - name: Release Maven package
         uses: samuelmeuli/action-maven-publish@v1
         with:

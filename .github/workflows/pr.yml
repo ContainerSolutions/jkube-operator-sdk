@@ -11,6 +11,15 @@ jobs:
         kubernetes: ['v1.17.13','v1.18.12','v1.19.4']
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }} # to avoid cloning in detached state (which would break committing)
+#      - name: Format code
+#        uses: axel-op/googlejavaformat-action@v3
+#        with:
+#          commitMessage: "chore(format): re-format code"
+#          args: "--replace"
+      - name: Check commit format
+        uses: talos-systems/conform@v0.1.0-alpha.20
       - uses: actions/cache@v2
         with:
           path: ~/.m2/repository
@@ -21,8 +30,6 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: ${{ matrix.java }}
-      - name: Check code format
-        run: mvn fmt:check --file pom.xml
       - name: Run unit tests
         run: mvn -B test --file pom.xml
       - name: Set up Minikube

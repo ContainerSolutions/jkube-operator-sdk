@@ -68,6 +68,7 @@ public class IntegrationTestSupport {
       overriddenConfig.withRetry(retry);
     }
     operator.register(controller, overriddenConfig.build());
+    operator.start();
     log.info("Operator is running with {}", controller.getClass().getCanonicalName());
   }
 

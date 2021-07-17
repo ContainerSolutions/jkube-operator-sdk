@@ -8,4 +8,6 @@ public interface EventHandler extends Closeable {
 
   @Override
   default void close() {}
+
+  default void start() {}
 }

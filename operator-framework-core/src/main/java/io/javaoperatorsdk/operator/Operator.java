@@ -7,7 +7,8 @@ import io.fabric8.kubernetes.client.Version;
 import io.javaoperatorsdk.operator.api.ResourceController;
 import io.javaoperatorsdk.operator.api.config.ConfigurationService;
 import io.javaoperatorsdk.operator.api.config.ControllerConfiguration;
-import io.javaoperatorsdk.operator.processing.event.DefaultEventSourceManager;
+import io.javaoperatorsdk.operator.processing.ControllerHandler;
+import io.javaoperatorsdk.operator.processing.event.EventHandler;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,12 +23,12 @@ public class Operator implements AutoCloseable {
   private static final Logger log = LoggerFactory.getLogger(Operator.class);
   private final KubernetesClient k8sClient;
   private final ConfigurationService configurationService;
-  private final List<Closeable> closeables;
+  private final List<ControllerHandler> handlers;
 
   public Operator(KubernetesClient k8sClient, ConfigurationService configurationService) {
     this.k8sClient = k8sClient;
     this.configurationService = configurationService;
-    this.closeables = new ArrayList<>();
+    this.handlers = new ArrayList<>();
 
     Runtime.getRuntime().addShutdownHook(new Thread(this::close));
   }
@@ -54,6 +55,9 @@ public class Operator implements AutoCloseable {
       log.error("Error retrieving the server version. Exiting!", e);
       throw new OperatorException("Error retrieving the server version", e);
     }
+
+    // start handlers
+    handlers.forEach(EventHandler::start);
   }
 
   /** Stop the operator. */
@@ -61,7 +65,7 @@ public class Operator implements AutoCloseable {
   public void close() {
     log.info("Operator {} is shutting down...", configurationService.getVersion().getSdkVersion());
 
-    for (Closeable closeable : this.closeables) {
+    for (Closeable closeable : this.handlers) {
       try {
         log.debug("closing {}", closeable);
         closeable.close();
@@ -138,10 +142,8 @@ public class Operator implements AutoCloseable {
       }
 
       final var client = k8sClient.customResources(resClass);
-      DefaultEventSourceManager eventSourceManager =
-          new DefaultEventSourceManager(controller, configuration, client);
-      controller.init(eventSourceManager);
-      closeables.add(eventSourceManager);
+      ControllerHandler handler = new ControllerHandler(controller, configuration, client);
+      handlers.add(handler);
 
       if (failOnMissingCurrentNS(configuration)) {
         throw new OperatorException(

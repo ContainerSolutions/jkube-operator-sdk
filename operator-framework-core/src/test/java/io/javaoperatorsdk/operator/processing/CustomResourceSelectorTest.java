@@ -11,9 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.fabric8.kubernetes.client.Watcher;
-import io.javaoperatorsdk.operator.api.config.ConfigurationService;
 import io.javaoperatorsdk.operator.processing.event.DefaultEvent;
-import io.javaoperatorsdk.operator.processing.event.DefaultEventSourceManager;
 import io.javaoperatorsdk.operator.processing.event.internal.CustomResourceEvent;
 import io.javaoperatorsdk.operator.sample.simple.TestCustomResource;
 import java.util.Objects;
@@ -23,40 +21,33 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 class CustomResourceSelectorTest {
-
-  public static final int FAKE_CONTROLLER_EXECUTION_DURATION = 250;
   public static final int SEPARATE_EXECUTION_TIMEOUT = 450;
 
   private final EventDispatcher eventDispatcherMock = mock(EventDispatcher.class);
   private final CustomResourceCache customResourceCache = new CustomResourceCache();
 
-  private final DefaultEventSourceManager defaultEventSourceManagerMock =
-      mock(DefaultEventSourceManager.class);
+  private final ControllerHandler mockHandler = mock(ControllerHandler.class);
 
   private final DefaultEventHandler defaultEventHandler =
-      new DefaultEventHandler(
-          eventDispatcherMock,
-          "Test",
-          null,
-          ConfigurationService.DEFAULT_RECONCILIATION_THREADS_NUMBER);
+      new DefaultEventHandler(eventDispatcherMock, "Test", null);
 
   @BeforeEach
   public void setup() {
-    defaultEventHandler.setEventSourceManager(defaultEventSourceManagerMock);
+    defaultEventHandler.setControllerHandler(mockHandler);
 
     // todo: remove
-    when(defaultEventSourceManagerMock.getCache()).thenReturn(customResourceCache);
-    doCallRealMethod().when(defaultEventSourceManagerMock).getLatestResource(any());
-    doCallRealMethod().when(defaultEventSourceManagerMock).getLatestResources(any());
-    doCallRealMethod().when(defaultEventSourceManagerMock).getLatestResourceUids(any());
-    doCallRealMethod().when(defaultEventSourceManagerMock).cacheResource(any(), any());
+    when(mockHandler.getCache()).thenReturn(customResourceCache);
+    doCallRealMethod().when(mockHandler).getLatestResource(any());
+    doCallRealMethod().when(mockHandler).getLatestResources(any());
+    doCallRealMethod().when(mockHandler).getLatestResourceUids(any());
+    doCallRealMethod().when(mockHandler).cacheResource(any(), any());
     doAnswer(
             invocation -> {
               final var resourceId = (String) invocation.getArgument(0);
               customResourceCache.cleanup(resourceId);
               return null;
             })
-        .when(defaultEventSourceManagerMock)
+        .when(mockHandler)
         .cleanup(any());
   }
 

@@ -1,4 +1,4 @@
-package io.javaoperatorsdk.operator.processing.event;
+package io.javaoperatorsdk.operator.processing;
 
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.client.CustomResource;
@@ -7,8 +7,10 @@ import io.fabric8.kubernetes.client.dsl.Resource;
 import io.javaoperatorsdk.operator.OperatorException;
 import io.javaoperatorsdk.operator.api.ResourceController;
 import io.javaoperatorsdk.operator.api.config.ControllerConfiguration;
-import io.javaoperatorsdk.operator.processing.CustomResourceCache;
-import io.javaoperatorsdk.operator.processing.DefaultEventHandler;
+import io.javaoperatorsdk.operator.processing.event.Event;
+import io.javaoperatorsdk.operator.processing.event.EventHandler;
+import io.javaoperatorsdk.operator.processing.event.EventSource;
+import io.javaoperatorsdk.operator.processing.event.EventSourceManager;
 import io.javaoperatorsdk.operator.processing.event.internal.CustomResourceEventSource;
 import io.javaoperatorsdk.operator.processing.event.internal.TimerEventSource;
 import java.util.Collections;
@@ -23,33 +25,38 @@ import java.util.function.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultEventSourceManager implements EventSourceManager {
+public class ControllerHandler implements EventSourceManager, EventHandler {
 
   public static final String RETRY_TIMER_EVENT_SOURCE_NAME = "retry-timer-event-source";
   private static final String CUSTOM_RESOURCE_EVENT_SOURCE_NAME = "custom-resource-event-source";
-  private static final Logger log = LoggerFactory.getLogger(DefaultEventSourceManager.class);
+  private static final Logger log = LoggerFactory.getLogger(ControllerHandler.class);
 
   private final ReentrantLock lock = new ReentrantLock();
   private final Map<String, EventSource> eventSources = new ConcurrentHashMap<>();
-  private final DefaultEventHandler defaultEventHandler;
-  private TimerEventSource retryTimerEventSource;
+  private final DefaultEventHandler eventHandler;
+  private final TimerEventSource retryTimerEventSource;
 
-  DefaultEventSourceManager(DefaultEventHandler defaultEventHandler, boolean supportRetry) {
-    this.defaultEventHandler = defaultEventHandler;
-    defaultEventHandler.setEventSourceManager(this);
-    if (supportRetry) {
-      this.retryTimerEventSource = new TimerEventSource();
-      registerEventSource(RETRY_TIMER_EVENT_SOURCE_NAME, retryTimerEventSource);
-    }
-  }
-
-  public <R extends CustomResource<?, ?>> DefaultEventSourceManager(
+  public <R extends CustomResource<?, ?>> ControllerHandler(
       ResourceController<R> controller,
       ControllerConfiguration<R> configuration,
       MixedOperation<R, KubernetesResourceList<R>, Resource<R>> client) {
-    this(new DefaultEventHandler(controller, configuration, client), true);
+    this.eventHandler = new DefaultEventHandler(controller, configuration, client);
+    eventHandler.setControllerHandler(this);
     registerEventSource(
         CUSTOM_RESOURCE_EVENT_SOURCE_NAME, new CustomResourceEventSource<>(client, configuration));
+    this.retryTimerEventSource = new TimerEventSource();
+    registerEventSource(RETRY_TIMER_EVENT_SOURCE_NAME, retryTimerEventSource);
+    controller.init(this);
+  }
+
+  @Override
+  public void start() {
+    eventSources.values().forEach(EventSource::start);
+  }
+
+  @Override
+  public void handleEvent(Event event) {
+    this.eventHandler.handleEvent(event);
   }
 
   @Override
@@ -69,6 +76,7 @@ public class DefaultEventSourceManager implements EventSourceManager {
     } finally {
       lock.unlock();
     }
+    eventHandler.close();
   }
 
   @Override
@@ -83,8 +91,7 @@ public class DefaultEventSourceManager implements EventSourceManager {
             "Event source with name already registered. Event source name: " + name);
       }
       eventSources.put(name, eventSource);
-      eventSource.setEventHandler(defaultEventHandler);
-      eventSource.start();
+      eventSource.setEventHandler(this);
     } catch (Throwable e) {
       if (e instanceof IllegalStateException) {
         // leave untouched
